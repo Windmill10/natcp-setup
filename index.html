@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>啟動 Claude Code — NATCP 清大AI體驗營</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,600&family=Noto+Serif+TC:wght@400;600&family=Noto+Sans+TC:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f4ee;
+    --fg: #1c1b18;
+    --fg-dim: #4a4843;
+    --muted: #8a857a;
+    --line: rgba(28,27,24,0.12);
+    --accent: #2b4c7e;
+    --serif: 'Newsreader', 'Noto Serif TC', Georgia, serif;
+    --sans: 'Noto Sans TC', system-ui, sans-serif;
+    --mono: 'IBM Plex Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--sans);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 3rem 1.5rem 5rem; }
+  header { border-bottom: 1px solid var(--line); padding-bottom: 1rem; margin-bottom: 2.5rem; }
+  .eyebrow { font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin: 0 0 0.4rem; }
+  h1 { font-family: var(--serif); font-weight: 600; font-size: 2rem; margin: 0; letter-spacing: -0.01em; }
+  .sub { color: var(--fg-dim); margin: 0.6rem 0 0; font-size: 0.95rem; }
+  .step { margin: 1.8rem 0; }
+  .step-num { font-family: var(--mono); font-size: 0.8rem; color: var(--accent); letter-spacing: 0.1em; }
+  .step-title { font-family: var(--serif); font-size: 1.2rem; font-weight: 600; margin: 0.2rem 0 0.7rem; }
+  .cmd-row { display: flex; align-items: stretch; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: rgba(28,27,24,0.025); }
+  .cmd-row code { flex: 1; font-family: var(--mono); font-size: 0.95rem; padding: 0.7rem 0.9rem; white-space: pre; overflow-x: auto; color: var(--fg); }
+  .cmd-row button { font-family: var(--sans); font-size: 0.85rem; color: var(--accent); background: rgba(43,76,126,0.06); border: 0; border-left: 1px solid var(--line); padding: 0 1rem; cursor: pointer; transition: background 0.15s, color 0.15s; white-space: nowrap; }
+  .cmd-row button:hover { background: rgba(43,76,126,0.12); }
+  .cmd-row button.copied { color: #2f7d5a; background: rgba(47,125,90,0.14); }
+  .note { color: var(--fg-dim); font-size: 0.95rem; margin: 0.5rem 0 0; }
+  .note code { font-family: var(--mono); color: var(--accent); font-size: 0.92em; }
+  .shot { margin-top: 0.9rem; }
+  .shot img { display: block; width: 100%; border: 1px solid var(--line); border-radius: 6px; }
+  .section { margin-top: 3rem; padding-top: 1.6rem; border-top: 1px solid var(--line); }
+  .section-title { font-family: var(--serif); font-size: 1.35rem; font-weight: 600; margin: 0 0 0.5rem; }
+  .section-sub { color: var(--fg-dim); font-size: 0.95rem; margin: 0 0 1rem; }
+  .cheatsheet { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem 1.4rem; }
+  .cheat-group-title { font-family: var(--mono); font-size: 0.76rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.25rem; }
+  .cheat-item { display: grid; grid-template-columns: 6.5rem 1fr; gap: 0.7rem; align-items: baseline; color: var(--fg-dim); font-size: 0.92rem; }
+  .cheat-item code, .model-list code { font-family: var(--mono); color: var(--accent); font-size: 0.92em; }
+  .model-list { display: flex; flex-wrap: wrap; gap: 0.45rem; margin: 0.7rem 0 1rem; }
+  .model-list code { border: 1px solid var(--line); border-radius: 999px; padding: 0.2rem 0.55rem; background: rgba(28,27,24,0.025); }
+  .link-list { display: grid; gap: 0.45rem; }
+  .link-list a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  .done { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--line); font-family: var(--serif); font-size: 1.3rem; }
+  .done .arrow { color: var(--accent); }
+  @media (max-width: 520px) {
+    .cmd-row { flex-direction: column; }
+    .cmd-row button { border-left: 0; border-top: 1px solid var(--line); padding: 0.6rem; }
+    .cheatsheet { grid-template-columns: 1fr; }
+    .cheat-item { grid-template-columns: 5.8rem 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">NATCP 清大AI體驗營</p>
+    <h1>啟動 Claude Code</h1>
+    <p class="sub">點指令右邊的複製按鈕，再貼進終端機就好。</p>
+  </header>
+
+  <!-- steps are rendered here from the STEPS array in the script below -->
+  <div id="steps"></div>
+  <div id="cheatsheet"></div>
+  <div id="models"></div>
+  <div id="links"></div>
+
+</div>
+<script>
+  /*
+    To add a new step, append an object to the STEPS array.
+    Two kinds:
+      { type: 'instruction', title: '標題', note: '說明（可用 <strong> <code>）' }
+      { type: 'command',     title: '標題', cmd: 'ollama ...' }
+    Optional field on a command:  alt: true   → renders as a secondary "也可以" row (no STEP number, smaller title)
+    Non-alt steps are auto-numbered STEP 1, 2, 3 … in array order.
+  */
+  const STEPS = [
+    { type: 'instruction', title: '打開 terminal', note: '<strong>Mac</strong>：開啟 Terminal　·　<strong>Windows</strong>：開啟 Windows Terminal' },
+    { type: 'command',     title: '下載模型',       cmd: 'ollama pull gemma4:cloud' },
+    { type: 'command',     title: '啟動 Claude Code', cmd: 'ollama launch claude' },
+    {
+      type: 'instruction',
+      title: '選擇模型',
+      note: '在清單裡選 <code>gemma4:cloud</code>',
+    },
+    { type: 'command',     title: '也可以直接開始聊天', cmd: 'ollama run gemma4:cloud', alt: true },
+  ];
+
+  const CHEATSHEET = [
+    {
+      title: 'session',
+      items: [
+        ['/status', '看版本、model、帳號、連線'],
+        ['/model', '切換 model'],
+        ['/effort', '調他要想多久'],
+        ['/init', '掃 codebase 生成 CLAUDE.md'],
+        ['/help', '查指令']
+      ]
+    },
+    {
+      title: 'permissions',
+      items: [
+        ['/permissions', '設定核准規則'],
+        ['/sandbox', '切換 sandbox 模式'],
+        ['shift+tab', '切換權限模式']
+      ]
+    },
+    {
+      title: 'context',
+      items: [
+        ['/context', '看用了多少 context'],
+        ['/clear', '清 context 重來'],
+        ['/compact', '壓縮 context'],
+        ['/usage', '看用量']
+      ]
+    },
+    {
+      title: 'recovery',
+      items: [
+        ['/rewind', '回到先前狀態'],
+        ['/resume', '回到某個 session']
+      ]
+    }
+  ];
+
+  const CLOUD_MODEL_EXAMPLES = [
+    'qwen3.5:cloud',
+    'gemma4:cloud',
+    'minimax-m2.7:cloud',
+    'glm-5:cloud',
+    'kimi-k2.7-code:cloud'
+  ];
+
+  const MODEL_TRY_COMMANDS = [
+    'ollama pull qwen3.5:cloud',
+    'ollama run qwen3.5:cloud',
+    'ollama launch claude --model qwen3.5:cloud'
+  ];
+
+  const LINKS = [
+    ['Ollama model search', 'https://ollama.com/search'],
+    ['Ollama usage settings', 'https://ollama.com/settings'],
+    ['Claude Code quickstart', 'https://code.claude.com/docs/en/quickstart'],
+    ['Claude HUD', 'https://github.com/jarrodwatts/claude-hud'],
+    ['Agent leaderboard', 'https://arena.ai/leaderboard/agent'],
+    ['OpenCode download', 'https://opencode.ai/download'],
+    ['OpenRouter', 'https://openrouter.ai'],
+    ['OpenRouter API keys', 'https://openrouter.ai/workspaces/default/keys']
+  ];
+
+  function copyHandler(btn, text) {
+    navigator.clipboard.writeText(text).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+    });
+    const orig = btn.textContent;
+    btn.textContent = '已複製 ✓';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1400);
+  }
+
+  function commandRow(cmd) {
+    const row = document.createElement('div');
+    row.className = 'cmd-row';
+    const code = document.createElement('code');
+    code.textContent = cmd;
+    const btn = document.createElement('button');
+    btn.textContent = '複製';
+    btn.addEventListener('click', () => copyHandler(btn, cmd));
+    row.appendChild(code);
+    row.appendChild(btn);
+    return row;
+  }
+
+  function render() {
+    const mount = document.getElementById('steps');
+    let n = 0, cid = 0;
+    for (const s of STEPS) {
+      const wrap = document.createElement('div');
+      wrap.className = 'step' + (s.alt ? ' alt' : '');
+
+      if (!s.alt) {
+        n += 1;
+        const num = document.createElement('div');
+        num.className = 'step-num';
+        num.textContent = 'STEP ' + n;
+        wrap.appendChild(num);
+      }
+
+      const t = document.createElement('div');
+      t.className = 'step-title';
+      if (s.alt) {
+        t.style.fontSize = '1rem';
+        t.style.color = 'var(--fg-dim)';
+        t.style.marginBottom = '0.5rem';
+      }
+      t.textContent = s.title;
+      wrap.appendChild(t);
+
+      if (s.type === 'instruction') {
+        const p = document.createElement('p');
+        p.className = 'note';
+        p.innerHTML = s.note;
+        wrap.appendChild(p);
+        if (s.image) {
+          const figure = document.createElement('div');
+          figure.className = 'shot';
+          const img = document.createElement('img');
+          img.src = s.image;
+          img.alt = s.imageAlt || '';
+          if (s.imageFallback) {
+            img.addEventListener('error', () => {
+              if (img.src.endsWith(s.imageFallback)) return;
+              img.src = s.imageFallback;
+            });
+          }
+          figure.appendChild(img);
+          wrap.appendChild(figure);
+        }
+      } else {
+        const row = commandRow(s.cmd);
+        row.querySelector('code').id = 'c' + (++cid);
+        wrap.appendChild(row);
+      }
+      mount.appendChild(wrap);
+    }
+  }
+
+  function renderCheatsheet() {
+    const mount = document.getElementById('cheatsheet');
+    const section = document.createElement('section');
+    section.className = 'section';
+    section.innerHTML = '<h2 class="section-title">常用指令 cheatsheet</h2><p class="section-sub">卡住時先看這裡。這些指令是在 Claude Code 裡輸入，不是在一般 shell 裡輸入。</p>';
+    const grid = document.createElement('div');
+    grid.className = 'cheatsheet';
+    for (const group of CHEATSHEET) {
+      const box = document.createElement('div');
+      const title = document.createElement('div');
+      title.className = 'cheat-group-title';
+      title.textContent = group.title;
+      box.appendChild(title);
+      for (const [cmd, text] of group.items) {
+        const item = document.createElement('div');
+        item.className = 'cheat-item';
+        const code = document.createElement('code');
+        code.textContent = cmd;
+        const desc = document.createElement('span');
+        desc.textContent = text;
+        item.appendChild(code);
+        item.appendChild(desc);
+        box.appendChild(item);
+      }
+      grid.appendChild(box);
+    }
+    section.appendChild(grid);
+    mount.appendChild(section);
+  }
+
+  function renderModels() {
+    const mount = document.getElementById('models');
+    const section = document.createElement('section');
+    section.className = 'section';
+    section.innerHTML = '<h2 class="section-title">試其他 Ollama 雲端模型</h2><p class="section-sub">Free plan 可以試 cloud model，但用量有限；高用量 model 可能很快用完或不能用。先 pull，再 run 測試；能回覆後，再拿同一個 model 啟動 Claude Code。</p>';
+
+    const models = document.createElement('div');
+    models.className = 'model-list';
+    for (const model of CLOUD_MODEL_EXAMPLES) {
+      const code = document.createElement('code');
+      code.textContent = model;
+      models.appendChild(code);
+    }
+    section.appendChild(models);
+
+    for (const cmd of MODEL_TRY_COMMANDS) {
+      const rowWrap = document.createElement('div');
+      rowWrap.style.marginTop = '0.55rem';
+      rowWrap.appendChild(commandRow(cmd));
+      section.appendChild(rowWrap);
+    }
+
+    const note = document.createElement('p');
+    note.className = 'note';
+    note.innerHTML = '把上面指令裡的 <code>qwen3.5:cloud</code> 換成其他 model name 也可以。若 <code>pull</code> 或 <code>run</code> 失敗，就換另一個或到 Ollama model search 查最新名稱。';
+    section.appendChild(note);
+    mount.appendChild(section);
+  }
+
+  function renderLinks() {
+    const mount = document.getElementById('links');
+    const section = document.createElement('section');
+    section.className = 'section';
+    section.innerHTML = '<h2 class="section-title">Useful links</h2>';
+    const list = document.createElement('div');
+    list.className = 'link-list';
+    for (const [label, href] of LINKS) {
+      const a = document.createElement('a');
+      a.href = href;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.textContent = label + ' — ' + href;
+      list.appendChild(a);
+    }
+    section.appendChild(list);
+    mount.appendChild(section);
+  }
+
+  render();
+  renderCheatsheet();
+  renderModels();
+  renderLinks();
+</script>
+</body>
+</html>
